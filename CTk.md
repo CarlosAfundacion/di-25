@@ -304,7 +304,7 @@ logo = ctk.CTkImage(
 
 ctk.CTkLabel(app, image=logo, text="").pack(pady=20)
 app.mainloop()
-```|
+```
 
 ---
 
