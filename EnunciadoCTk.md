@@ -162,18 +162,26 @@ class GestorUsuarios:
 * Controlador conectando **listar/selección** y **salir**.
 * **Entrega**: app arranca, muestra lista (vacía) y responde a selección.
 
+<img width="661" height="400" alt="imagen" src="https://github.com/user-attachments/assets/0d200370-e876-4399-8b52-6e8096181cab" />
+
+
 ### Fase 2 — Alta con **CTkToplevel** (modal) + Avatares
 
 * Modal **Añadir** con `Entry nombre`, `Scale edad` o `Entry validada`, `RadioButton genero`, selección de **avatar** (3 opciones).
 * Validación y alta en modelo; actualización de la vista.
-* Mostrar **avatar** en previsualización (cargar `PhotoImage` y **conservar referencia**).
+* Mostrar **avatar** en previsualización (cargar `CTkImage` y **conservar referencia**).
 * **Entrega**: alta funcional con avatar y previsualización correcta.
+
+  <img width="258" height="353" alt="imagen" src="https://github.com/user-attachments/assets/43475405-f90c-47e1-aa92-4955dd770ba3" />
+
 
 ### Fase 3 — **CSV** (guardar/cargar) + excepciones
 
 * Menú Archivo con Guardar/Cargar; `utf-8`, `newline=''`, cabecera correcta.
 * Control de `FileNotFoundError` y filas inválidas; no debe romper la app.
 * **Entrega**: cierro app, la abro, cargo CSV, veo usuarios con avatares.
+  
+<img width="234" height="236" alt="imagen" src="https://github.com/user-attachments/assets/d1179c71-4738-4d44-b43f-71ea3ecc3147" />
 
 ### Fase 4 — **Búsqueda/filtrado** + **barra de estado** + **editar**
 
@@ -181,11 +189,21 @@ class GestorUsuarios:
 * Barra de estado con recuentos y mensajes (guardado OK, errores, etc.).
 * Doble clic en usuario para **editar** en modal y actualizar registro.
 * **Entrega**: filtros dinámicos, mensajes en barra de estado y edición operativa.
+<img width="660" height="462" alt="imagen" src="https://github.com/user-attachments/assets/2a27094c-53c9-4059-8a82-e2e691921132" />
+
+<img width="816" height="295" alt="imagen" src="https://github.com/user-attachments/assets/44a21740-09cc-4701-9fc5-56a8dc41a27c" />
+
 
 ### Fase 5 — **Auto-guardado con hilos**
 
 * Botón que activa un hilo que cada 10 s guarda CSV; comunicar a la UI con `after()`. Parar hilo en `salir()`.
 * **Entrega**: versión final estable; (si aplica) auto-guardado no bloqueante.
+  
+<img width="666" height="469" alt="imagen" src="https://github.com/user-attachments/assets/c6759ce3-7614-486f-8d55-eeb0bc6063e1" />
+
+
+
+  
 
 ---
 
