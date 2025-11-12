@@ -1,5 +1,5 @@
 
-# Práctica  — Registro de Usuarios+ con **CustomTkinter** y **MVC**
+# Práctica  — Registro de Usuarios con **CustomTkinter** y **MVC**
 
 ## Objetivo
 
