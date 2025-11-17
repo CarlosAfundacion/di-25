@@ -121,9 +121,13 @@ for i, usuario in enumerate(usuarios):
 #### **Paso 1.3: El Controlador (`controller/app_controller.py`)**
 
 1.  **Crea la clase `AppController`**. En `__init__`, instancia el Modelo y la Vista.
-2.  **Crea el método `refrescar_lista_usuarios(self)`**: Pide los datos al modelo y los pasa a la vista, junto con el callback de selección.
-3.  **Crea el método `seleccionar_usuario(self, indice)`**: Este es el callback. Recibe el índice, pide el usuario completo al modelo y se lo pasa a la vista para que muestre los detalles.
-4.  **Llamada Inicial**: Llama a `self.refrescar_lista_usuarios()` al final del `__init__` para poblar la lista al arrancar.
+2.  **Crea el método `refrescar_lista_usuarios(self)`**: Pide los datos al modelo y los pasa a la vista, junto con el callback de selección. Su cnotenido sería el siguiente:
+   <img width="899" height="69" alt="imagen" src="https://github.com/user-attachments/assets/851e6e9e-e60e-4ac4-881f-65d21043dcc6" />
+
+4.  **Crea el método `seleccionar_usuario(self, indice)`**: Este es el callback. Recibe el índice, pide el usuario completo al modelo y se lo pasa a la vista para que muestre los detalles. Este método contiene entre otras cosas la llamada a la vista para que muestre los detalles.
+ <img width="697" height="32" alt="imagen" src="https://github.com/user-attachments/assets/030b1506-4515-4ce9-a74b-996a987890f9" />
+
+6.  **Llamada Inicial**: Llama a `self.refrescar_lista_usuarios()` al final del `__init__` para poblar la lista al arrancar.
 
 **Checkpoint Fase 1:** Ejecuta `app.py`. Deberías ver una ventana con tu lista de usuarios de ejemplo. Al hacer clic en ellos, los detalles se actualizan.
 <img width="1175" height="772" alt="imagen" src="https://github.com/user-attachments/assets/ff7d1964-bf40-4fe7-9622-b16883c0bd91" />
