@@ -228,6 +228,8 @@ public class MainViewModel extends ViewModel {
 ### 4.4 LA FACTORY
 **Ubicación:** `com.example.mvvm.viewmodel`
 
+Se utiliza ViewModelFactory porque Android no sabe cómo crear un ViewModel que tiene parámetros en el constructor. Este es un caso de bolierplate: código repetitivo, obligatorio y poco expresivo, que no aporta lógica de negocio, pero es necesario por la arquitectura o el framework.
+
 ```java
 package com.example.mvvm.viewmodel;
 
