@@ -327,7 +327,3 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
----
-
-## 5. CONCLUSIÓN
-
