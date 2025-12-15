@@ -4,7 +4,7 @@
 
 ## 1. INTRODUCCIÓN: DE TKINTER A ANDROID
 
-Como programadores, venís de trabajar con **Tkinter en Python** usando el patrón MVC (Modelo-Vista-Controlador). En ese entorno, la vida era sencilla: creabas una ventana, declarabas variables y estas seguían vivas hasta que cerrabas el programa.
+Venimos de trabajar con **Tkinter en Python** usando el patrón MVC (Modelo-Vista-Controlador). En ese entorno, la vida era sencilla: creabas una ventana, declarabas variables y estas seguían vivas hasta que cerrabas el programa.
 
 ### 1.1 El "Problema" de Android
 Android funciona de manera muy diferente. El sistema operativo gestiona los recursos agresivamente.
@@ -74,20 +74,6 @@ Es la única fuente de verdad. El ViewModel le pide datos al Repositorio, y el R
 
 Vamos a crear una aplicación completa.
 **Objetivo:** Una app para añadir productos a una lista. Debe mantener los datos al girar la pantalla.
-
-### 4.0 Configuración (`build.gradle`)
-Asegúrate de tener estas dependencias en el `build.gradle (Module: app)`:
-
-```gradle
-dependencies {
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    // Librerías de ciclo de vida y ViewModel
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.1"
-    implementation "androidx.lifecycle:lifecycle-livedata:2.6.1"
-}
-```
 
 ---
 
