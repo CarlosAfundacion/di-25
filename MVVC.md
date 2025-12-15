@@ -70,10 +70,8 @@ Es la única fuente de verdad. El ViewModel le pide datos al Repositorio, y el R
 
 ---
 
-## 4. PRÁCTICA GUIADA: GESTOR DE STOCK
-
-Vamos a crear una aplicación completa.
-**Objetivo:** Una app para añadir productos a una lista. Debe mantener los datos al girar la pantalla.
+## GESTOR DE STOCK
+Una app para añadir productos a una lista. Debe mantener los datos al girar la pantalla.
 
 ---
 
