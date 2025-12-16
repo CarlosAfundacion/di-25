@@ -68,6 +68,100 @@ Es un contenedor de datos observable.
 ### 3.4 El Repositorio
 Es la única fuente de verdad. El ViewModel le pide datos al Repositorio, y el Repositorio decide si los saca de una lista estática, de una base de datos local o de una API.
 
+
+### 3.4 Ejemplos sencillos (Sin acceder al model)
+
+#### EJEMPLO A: El Interruptor (Booleanos y Colores)
+*Objetivo:* Entender cómo un clic cambia un estado interno y la vista reacciona cambiando un color. Sin repositorios, solo lógica de UI.
+
+**1. El ViewModel (`InterruptorViewModel.java`)**
+Fíjate que no tiene constructor especial, por lo que no necesitamos Factory.
+```java
+public class InterruptorViewModel extends ViewModel {
+    // Estado: ¿Está encendido?
+    private final MutableLiveData<Boolean> _encendido = new MutableLiveData<>(false);
+
+    public LiveData<Boolean> getEstado() { return _encendido; }
+
+    public void alternar() {
+        // Leemos el valor actual y lo invertimos
+        boolean valorActual = Boolean.TRUE.equals(_encendido.getValue());
+        _encendido.setValue(!valorActual);
+    }
+}
+```
+
+**2. La Activity (`MainActivity.java`)**
+```java
+// En el onCreate...
+InterruptorViewModel vm = new ViewModelProvider(this).get(InterruptorViewModel.class);
+View fondo = findViewById(R.id.layoutFondo); // El contenedor principal
+Button boton = findViewById(R.id.btnInterruptor);
+
+// 1. OBSERVAR: Si el dato cambia, pintamos el fondo
+vm.getEstado().observe(this, esEncendido -> {
+    if (esEncendido) {
+        fondo.setBackgroundColor(Color.YELLOW);
+        boton.setText("APAGAR");
+    } else {
+        fondo.setBackgroundColor(Color.GRAY);
+        boton.setText("ENCENDER");
+    }
+});
+
+// 2. EVENTO: Al hacer clic, solo avisamos al VM
+boton.setOnClickListener(v -> vm.alternar());
+```
+
+---
+
+#### EJEMPLO B: El Espejo Mágico (Strings en tiempo real)
+*Objetivo:* Ver cómo lo que escribes en un sitio viaja al ViewModel y vuelve a otro sitio automáticamente.
+
+**1. El ViewModel (`EspejoViewModel.java`)**
+```java
+public class EspejoViewModel extends ViewModel {
+    private final MutableLiveData<String> _texto = new MutableLiveData<>("");
+
+    public LiveData<String> getTexto() { return _texto; }
+
+    public void actualizarTexto(String s) {
+        // Podríamos añadir lógica aquí, ej: convertir a mayúsculas
+        _texto.setValue(s.toUpperCase());
+    }
+}
+```
+
+**2. La Activity**
+```java
+EditText entrada = findViewById(R.id.inputTexto);
+TextView salida = findViewById(R.id.txtResultado);
+EspejoViewModel vm = new ViewModelProvider(this).get(EspejoViewModel.class);
+
+// 1. OBSERVAR
+vm.getTexto().observe(this, texto -> {
+    salida.setText(texto); 
+});
+
+// 2. EVENTO (Cada vez que se escribe una letra)
+entrada.addTextChangedListener(new TextWatcher() {
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        vm.actualizarTexto(s.toString());
+    }
+// Métodos necesarios pero que van vacíos.
+    @Override
+    public void afterTextChanged(Editable editable) {
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
+
+});
+```
+
+
 ---
 
 ## GESTOR DE STOCK
@@ -130,7 +224,7 @@ Una app para añadir productos a una lista. Debe mantener los datos al girar la 
 ---
 
 ### 4.2 LA CAPA DE DATOS (REPOSITORY)
-Simularemos una base de datos.
+Es una clase Java pura. Su única misión es abstraer el origen de los datos. Al ViewModel no le importa si los datos vienen de Internet o de una lista estática.
 **Ubicación:** `com.example.mvvm.data`
 
 ```java
@@ -164,7 +258,8 @@ public class StockRepository {
 ---
 
 ### 4.3 EL VIEWMODEL (LÓGICA)
-Gestiona la comunicación.
+El ViewModel es una clase diseñada para almacenar y gestionar datos relacionados con la UI de una manera consciente del ciclo de vida.
+IMPORTANTE: El ViewModel sobrevive si giras la pantalla.
 **Ubicación:** `com.example.mvvm.viewmodel`
 
 ```java
@@ -226,7 +321,9 @@ public class MainViewModel extends ViewModel {
 ### 4.4 LA FACTORY
 **Ubicación:** `com.example.mvvm.viewmodel`
 
-Se utiliza ViewModelFactory porque Android no sabe cómo crear un ViewModel que tiene parámetros en el constructor. Este es un caso de bolierplate: código repetitivo, obligatorio y poco expresivo, que no aporta lógica de negocio, pero es necesario por la arquitectura o el framework.
+Por defecto, Android no sabe cómo crear un ViewModel que tenga argumentos en su constructor (como nuestro repository). Necesitamos una clase "Fábrica".
+
+Nota: Esto es código "boilerplate" (repetitivo) necesario en Java sin librerías externas.
 
 ```java
 package com.example.mvvm.viewmodel;
@@ -255,6 +352,7 @@ public class MainViewModelFactory implements ViewModelProvider.Factory {
 ---
 
 ### 4.5 LA ACTIVITY (LA VISTA)
+Ahora unimos todo en la Activity. La clave es el método .observe().
 **Ubicación:** `com.example.mvvm.ui`
 
 ```java
@@ -298,6 +396,8 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getStockList().observe(this, textoActualizado -> {
             tvListado.setText(textoActualizado);
         });
+        // IMPORTANTE - En el caso de usar un fragment en vez de una activity cuando
+        // hacemos el observe, usaremos getViewLifecycleOwner() en vez de this
 
         viewModel.getError().observe(this, mensajeError -> {
             Toast.makeText(this, mensajeError, Toast.LENGTH_SHORT).show();
