@@ -1,4 +1,4 @@
-## TEMA: ARQUITECTURA ANDROID (MVVM, LIFECYCLE Y REPOSITORIO)
+## ARQUITECTURA ANDROID (MVVM)
 
 ---
 
@@ -95,7 +95,7 @@ public class InterruptorViewModel extends ViewModel {
 ```java
 // En el onCreate...
 InterruptorViewModel vm = new ViewModelProvider(this).get(InterruptorViewModel.class);
-View fondo = findViewById(R.id.layoutFondo); // El contenedor principal
+View fondo = findViewById(R.id.layoutFondo); 
 Button boton = findViewById(R.id.btnInterruptor);
 
 // 1. OBSERVAR: Si el dato cambia, pintamos el fondo
@@ -126,7 +126,7 @@ public class EspejoViewModel extends ViewModel {
     public LiveData<String> getTexto() { return _texto; }
 
     public void actualizarTexto(String s) {
-        // Podríamos añadir lógica aquí, ej: convertir a mayúsculas
+        // Convertir a mayúsculas el texto
         _texto.setValue(s.toUpperCase());
     }
 }
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this, factory).get(ConversorViewModel.class);
 
 
-        // --- UI (Igual que siempre) ---
+    
         EditText etEuros = findViewById(R.id.etEuros);
         Button btnCalcular = findViewById(R.id.btnCalcular);
         TextView tvResultado = findViewById(R.id.tvResultado);
@@ -423,10 +423,10 @@ IMPORTANTE: El ViewModel sobrevive si giras la pantalla.
 ```java
 package com.example.mvvm.viewmodel; 
 
-// 2. IMPORTAMOS el repositorio que está en otro paquete
+
 import com.example.mvvm.data.StockRepository;
 
-// 3. Imports de Android
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -488,7 +488,7 @@ package com.example.mvvm.viewmodel;
 
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.mvvm.data.StockRepository; // Import necesario
+import com.example.mvvm.data.StockRepository; 
 
 public class MainViewModelFactory implements ViewModelProvider.Factory {
     private final StockRepository repository;
