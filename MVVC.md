@@ -161,6 +161,164 @@ entrada.addTextChangedListener(new TextWatcher() {
 });
 ```
 
+---
+
+#### EJMPLO C: "EL CONVERSOR DE MONEDA"
+
+Objetivo: Entender la necesidad de la ViewModelFactory.
+Vamos a crear una app que convierte Euros a Dólares.
+
+
+
+**1. EL MODELO (Repository)**
+Aquí es donde debe estar el dato. Puede venir de una variable fija, de una base de datos o de Internet.
+
+**Archivo:** `TasasRepository.java`
+
+```java
+package com.example.conversor;
+
+public class TasasRepository {
+    // Aquí está el dato, protegido y encapsulado
+    private final double tasaDolar = 1.08;
+
+    public double getTasaDolar() {
+        return tasaDolar;
+    }
+}
+```
+
+
+**2. EL VIEWMODEL (Recibe el Repositorio)**
+El ViewModel ya no recibe el objeto `TasasRepository` completo. Así, si mañana el repositorio tiene más métodos, el ViewModel ya tiene acceso a ellos.
+
+**Archivo:** `ConversorViewModel.java`
+
+```java
+package com.example.conversor;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+public class ConversorViewModel extends ViewModel {
+
+    private final TasasRepository repository;
+    private final MutableLiveData<String> _resultado = new MutableLiveData<>();
+
+    // CONSTRUCTOR: Pide el origen de los datos (El Repo)
+    public ConversorViewModel(TasasRepository repository) {
+        this.repository = repository;
+        _resultado.setValue("0.0 $");
+    }
+
+    public LiveData<String> getResultado() {
+        return _resultado;
+    }
+
+    public void convertir(String textoEuros) {
+        try {
+            double euros = Double.parseDouble(textoEuros);
+            
+            // PEDIMOS EL DATO AL REPOSITORIO AQUÍ
+            double tasa = repository.getTasaDolar(); 
+            
+            double dolares = euros * tasa;
+            _resultado.setValue(String.format("%.2f $", dolares));
+            
+        } catch (NumberFormatException e) {
+            _resultado.setValue("Error");
+        }
+    }
+}
+```
+
+
+**3. LA FACTORY (El repartidor)**
+Su trabajo es coger el Repositorio y metérselo al ViewModel al crearlo.
+
+**Archivo:** `ConversorFactory.java`
+
+```java
+package com.example.conversor;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+public class ConversorFactory implements ViewModelProvider.Factory {
+
+    private final TasasRepository repository;
+
+    // Recibimos el repositorio en el constructor de la fábrica
+    public ConversorFactory(TasasRepository repository) {
+        this.repository = repository;
+    }
+
+    @NonNull
+    @Override
+    public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+        if (modelClass.isAssignableFrom(ConversorViewModel.class)) {
+            // Inyectamos el repositorio al crear el ViewModel
+            return (T) new ConversorViewModel(repository);
+        }
+        throw new IllegalArgumentException("Unknown ViewModel class");
+    }
+}
+```
+
+
+**4. LA ACTIVITY (El ensamblador)**
+La Activity **inicializa** el Repositorio, pero **no contiene el dato**. No sabe si el dólar está a 1.08 o a 50. Solo conecta las piezas.
+
+**Archivo:** `MainActivity.java`
+
+```java
+package com.example.conversor;
+
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
+public class MainActivity extends AppCompatActivity {
+
+    private ConversorViewModel viewModel;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // --- INYECCIÓN DE DEPENDENCIAS MANUAL ---
+        
+        // 1. Crear el Modelo (La fuente de datos)
+        TasasRepository repo = new TasasRepository();
+
+        // 2. Crear la Factory y darle el Modelo
+        ConversorFactory factory = new ConversorFactory(repo);
+
+        // 3. Crear el ViewModel usando la Factory
+        viewModel = new ViewModelProvider(this, factory).get(ConversorViewModel.class);
+
+
+        // --- UI (Igual que siempre) ---
+        EditText etEuros = findViewById(R.id.etEuros);
+        Button btnCalcular = findViewById(R.id.btnCalcular);
+        TextView tvResultado = findViewById(R.id.tvResultado);
+
+        viewModel.getResultado().observe(this, texto -> {
+            tvResultado.setText(texto);
+        });
+
+        btnCalcular.setOnClickListener(v -> {
+            viewModel.convertir(etEuros.getText().toString());
+        });
+    }
+}
+```
 
 ---
 
@@ -228,7 +386,7 @@ Es una clase Java pura. Su única misión es abstraer el origen de los datos. Al
 **Ubicación:** `com.example.mvvm.data`
 
 ```java
-package com.example.mvvm.data; // 1. Declaramos el paquete
+package com.example.mvvm.data; 
 
 import java.util.ArrayList;
 import java.util.List;
@@ -263,7 +421,7 @@ IMPORTANTE: El ViewModel sobrevive si giras la pantalla.
 **Ubicación:** `com.example.mvvm.viewmodel`
 
 ```java
-package com.example.mvvm.viewmodel; // 1. Declaramos el paquete
+package com.example.mvvm.viewmodel; 
 
 // 2. IMPORTAMOS el repositorio que está en otro paquete
 import com.example.mvvm.data.StockRepository;
