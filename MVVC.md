@@ -571,3 +571,265 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
+## 5. Ejercicios:
+
+
+# 1) Interruptor MVVM: Toast “one-shot” que no se repite al rotar
+
+## Enunciado
+
+Amplía el ejercicio del interruptor para que, al pulsar el botón, además de cambiar el color y el texto del botón, se muestre un **Toast** indicando “Encendido” o “Apagado”.
+Ese Toast debe ser un **evento**: si giras la pantalla, **NO debe volver a aparecer**.
+
+## Requisitos
+
+* El **estado** (`encendido`) se mantiene en `LiveData<Boolean>`.
+* El **evento Toast** se expone en un `LiveData<String>` (por ejemplo `getEventoToast()`).
+* La Activity **observa** el evento y muestra el Toast **solo una vez**.
+
+## Guía de implementación
+
+### ViewModel
+
+1. Añade un `MutableLiveData<String>` para el evento (inicialmente `null`).
+2. Expónlo como `LiveData<String>` con un getter.
+3. En `alternar()`:
+
+   * Cambia `_encendido`.
+   * Escribe en `_eventoToast` el mensaje (“Encendido”/“Apagado”).
+4. Añade un método `consumirEventoToast()` (o similar) que ponga el evento a `null`.
+
+   * Importante: **la Activity lo llamará** tras mostrar el Toast.
+
+### Activity
+
+1. Observa `getEventoToast()`.
+2. Si el valor recibido **no es null**:
+
+   * Muestra `Toast`.
+   * Llama a `vm.consumirEventoToast()` para limpiar el evento.
+
+## Prueba obligatoria
+
+* Pulsa el botón → aparece Toast.
+* Gira la pantalla sin tocar nada → **no aparece ningún Toast**.
+
+---
+
+# 2) Espejo MVVM: error + contador de caracteres
+
+## Enunciado
+
+Modifica el “Espejo Mágico” para que:
+
+* Muestre el texto transformado (por ejemplo en mayúsculas).
+* Muestre el número de caracteres escritos.
+* Muestre un error si:
+
+  * supera 20 caracteres **o**
+  * contiene algún número (0–9).
+
+La validación debe estar en el **ViewModel** (la Activity no valida).
+
+## Requisitos
+
+* `LiveData<String> textoTransformado`
+* `LiveData<Integer> longitud`
+* `LiveData<String> error` (null si no hay error)
+* El método `actualizarTexto(String s)` actualiza **los tres** estados.
+
+## Guía de implementación
+
+### XML
+
+Añade:
+
+* Un `TextView` para la longitud (“Longitud: X”).
+* Un `TextView` para el error (puede estar vacío si no hay error).
+  *(Opcional: si prefieres, el error puede mostrarse por Toast, pero mejor TextView para ver el estado.)*
+
+### ViewModel
+
+1. Crea `MutableLiveData` para textoTransformado, longitud y error.
+2. En `actualizarTexto(s)`:
+
+   * Calcula `len = s.length()`.
+   * Comprueba si contiene dígitos (con regex o recorriendo caracteres).
+   * Si hay error:
+
+     * `error = "..."` (mensaje claro)
+     * Decide qué hacer con el texto transformado:
+
+       * O bien lo dejas igual,
+       * o lo pones vacío,
+       * o lo mantienes pero avisas con error (cualquiera vale si lo defines en el enunciado).
+   * Si NO hay error:
+
+     * `error = null`
+     * `textoTransformado = s.toUpperCase()`
+   * `longitud = len`
+
+### Activity
+
+1. Observa `textoTransformado` y lo pinta en su `TextView`.
+2. Observa `longitud` y actualiza el `TextView` del contador.
+3. Observa `error`:
+
+   * Si es null, limpia el TextView de error.
+   * Si no es null, muestra el mensaje.
+
+## Prueba obligatoria
+
+* Escribe “hola” → transformado OK, longitud 4, sin error.
+* Escribe “hola1” → error por número.
+* Pasa de 20 caracteres → error por longitud.
+* Gira pantalla → deben mantenerse texto/longitud/error (estado del VM).
+
+---
+
+# 3) Conversor de moneda MVVM: tasa editable en caliente (sin API)
+
+## Enunciado
+
+Amplía el conversor para que la **tasa dólar** se pueda modificar en la propia app.
+El usuario introduce:
+
+* Euros
+* Tasa (por defecto 1.08)
+  y pulsa:
+* “Actualizar tasa”
+* “Convertir”
+
+La tasa debe vivir en el **Repository**, no en la Activity ni “hardcodeada” en el ViewModel.
+
+## Requisitos
+
+* Repository con:
+
+  * `getTasaDolar()`
+  * `setTasaDolar(double nuevaTasa)`
+* ViewModel con:
+
+  * `actualizarTasa(String s)` (parsea, valida, llama a repo)
+  * `convertir(String euros)` (siempre consulta `repo.getTasaDolar()`)
+* Activity:
+
+  * 2 EditText + 2 botones, observa resultado.
+
+## Guía de implementación
+
+### XML
+
+Añade:
+
+* `EditText` para la tasa (hint: “Tasa USD”).
+* Botón “Actualizar tasa”.
+* (Opcional) un `TextView` que muestre la tasa actual.
+
+### Repository
+
+1. Cambia la tasa de constante a atributo modificable (privado).
+2. Implementa setter y getter.
+3. (Opcional) valida en repo o en VM, pero decide uno:
+
+   * Recomendado: valida en VM, el repo asume que lo que recibe es correcto.
+
+### ViewModel
+
+1. Añade `LiveData<String> error` (para tasa inválida o euros inválidos).
+2. `actualizarTasa(s)`:
+
+   * parsea a double
+   * valida `> 0`
+   * llama a `repo.setTasaDolar(...)`
+   * emite evento/estado de confirmación (puede ser `error=null` y/o un evento toast “Tasa actualizada”).
+3. `convertir(euros)`:
+
+   * parsea euros
+   * tasa = `repo.getTasaDolar()`
+   * calcula resultado
+   * actualiza `resultado LiveData`
+
+### Activity
+
+1. Botón “Actualizar tasa” → `vm.actualizarTasa(etTasa.getText().toString())`
+2. Botón “Convertir” → `vm.convertir(etEuros.getText().toString())`
+3. Observa resultado y lo muestra.
+4. Observa error (o evento) para avisar.
+
+## Prueba obligatoria
+
+* Cambia tasa a 2.0 → convierte 10€ → 20$.
+* Gira pantalla → la tasa debe seguir siendo la última (si el repo está inyectado y el VM vive, debe mantenerse durante esa vida; en tu ejemplo el repo vive mientras viva el VM, perfecto).
+
+---
+
+# 4) Gestor de Stock MVVM: borrar producto + confirmación como evento
+
+## Enunciado
+
+Añade al gestor de stock una opción para borrar productos y mostrar una confirmación por Toast (“Producto eliminado”).
+Ese Toast debe ser **evento** (one-shot), no debe reaparecer tras rotación.
+
+El borrado puede ser:
+
+* “Borrar último” (más fácil)
+  o
+* “Borrar por nombre” (un poco más)
+
+## Requisitos
+
+* Repository:
+
+  * `removeAt(int index)` **o** `removeProduct(String name)`
+* ViewModel:
+
+  * `deleteProduct(...)`
+  * `LiveData<String> eventoConfirmacion`
+  * `LiveData<String> error` (si no hay productos, o no se encuentra, etc.)
+* Activity:
+
+  * botón de borrar
+  * observa confirmación y error
+
+## Guía de implementación
+
+### XML
+
+Añade un botón “Borrar último” (recomendado) o:
+
+* un EditText “Producto a borrar”
+* botón “Borrar”
+
+### Repository
+
+* Si es “borrar último”:
+
+  1. Implementa `removeLast()` o `removeAt(size-1)` con control de lista vacía.
+* Si es “borrar por nombre”:
+
+  1. Implementa `removeProduct(name)` devolviendo boolean (true si borró).
+
+### ViewModel
+
+1. Añade `MutableLiveData<String> _eventoConfirmacion` (null por defecto) y expón como `LiveData`.
+2. Añade `MutableLiveData<String> _error`.
+3. Implementa `deleteProduct(...)`:
+
+   * valida (lista vacía / nombre vacío / no encontrado)
+   * si OK: borra en repo, refresca listado, y emite `_eventoConfirmacion = "Producto eliminado"`
+4. Añade `consumirEventoConfirmacion()` que lo ponga a null tras mostrarse.
+
+### Activity
+
+1. Botón borrar → llama a `vm.deleteProduct(...)`
+2. Observa `eventoConfirmacion`:
+
+   * si no es null → Toast → `vm.consumirEventoConfirmacion()`
+3. Observa `error` → Toast o TextView
+
+## Prueba obligatoria
+
+* Borrar con lista vacía → error.
+* Borrar con lista con elementos → se elimina y se actualiza el inventario.
+* Girar pantalla → el Toast de confirmación **no se repite**.
