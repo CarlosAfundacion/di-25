@@ -655,6 +655,12 @@ Añade:
 
    * Calcula `len = s.length()`.
    * Comprueba si contiene dígitos (con regex o recorriendo caracteres).
+Para ello usaremos expresiones regulares (regex) que es más sencillo:
+
+    ```java
+        boolean tieneNumero = s.matches(".*\\d.*");
+     ```
+Con esta línea de código comprobamos si el string tiene algún número(0-9)
    * Si hay error:
 
      * `error = "..."` (mensaje claro)
