@@ -671,10 +671,10 @@ no solo que “salga un mensaje”.
 
 1. Sustituir `EditText` por `TextInputLayout`
 2. Cambiar botones a `MaterialButton`
-3. Añadir una Toolbar
+3. Usar Snackbar
 4. Mejorar el mensaje de “sin avisos”
 5. Comprobar:
 
    * El Snackbar **no se repite** al rotar
    * El estado se mantiene
-**
+
