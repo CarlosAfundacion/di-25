@@ -451,7 +451,7 @@ Material define jerarquía visual:
 
 ### Botón principal (Filled / Contained Button)
 
-Es el botón con **más peso visual**. Debe usarse **una sola vez por pantalla**.
+Es el botón con **más peso visual**. Debe usarse **una sola vez por pantalla**. Es el que creamos por defecto.
 
 **Características**
 
@@ -465,8 +465,8 @@ Es el botón con **más peso visual**. Debe usarse **una sola vez por pantalla**
 <com.google.android.material.button.MaterialButton
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="Guardar"
-    style="?attr/materialButtonFilledStyle"/>
+    android:text="Guardar"/>
+
 ```
 
 ---
@@ -488,7 +488,7 @@ Acción importante, pero **no principal**.
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Cancelar"
-    style="?attr/materialButtonOutlinedStyle"/>
+    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>/>
 ```
 
 ---
@@ -510,7 +510,7 @@ Acciones auxiliares o poco críticas.
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="Más información"
-    style="?attr/materialButtonTextStyle"/>
+    style="@style/Widget.Material3.Button.TextButton"/>
 ```
 
  No todos los botones deben llamar la atención igual.
@@ -678,3 +678,314 @@ no solo que “salga un mensaje”.
    * El Snackbar **no se repite** al rotar
    * El estado se mantiene
 
+## 12. De una pantalla a una aplicación: el problema de la navegación
+
+Hasta ahora, *Aula+ Lite* es una aplicación de **una sola pantalla**. Esto era intencionado:
+
+* Nos permitió centrarnos en:
+
+  * MVVM correcto
+  * Estado en ViewModel
+  * UX/UI en una pantalla real
+  * Material Design en inputs/botones/feedback
+
+Pero en cuanto una app tiene:
+
+* Login
+* Registro
+* Home
+* Detalle
+* Ajustes
+
+aparece un problema nuevo:
+
+> **¿Quién decide a dónde se navega y cuándo?**
+
+Y, sobre todo:
+
+> **¿Cómo garantizamos que el flujo sea coherente y mantenible?**
+
+---
+
+## 13. Navegación clásica con Activities: por qué no escala
+
+El enfoque tradicional es lanzar Activities con `Intent`:
+
+```java
+Intent intent = new Intent(this, HomeActivity.class);
+startActivity(intent);
+```
+
+Funciona, pero a medio plazo falla por diseño:
+
+* La navegación queda **dispersa** (cada botón navega “a su manera”)
+* No hay “mapa” del flujo
+* El botón atrás se vuelve impredecible si el flujo crece
+* Es difícil aplicar reglas de negocio de navegación:
+
+  * “Si no estás logueado, no entras a Home”
+  * “Después de login no se vuelve atrás”
+* La vista termina decidiendo cosas que no le corresponden
+
+En DI esto es importante:
+
+> Una app profesional no solo “navega”, sino que navega con **flujo controlado**.
+
+---
+
+## 14. Enfoque profesional: navegación declarativa
+
+Android propone un enfoque distinto:
+
+* En lugar de programar navegación botón a botón,
+* se define un **grafo de navegación**:
+
+1. Qué pantallas existen
+2. Cómo se conectan
+3. Cuál es la pantalla inicial
+4. Cómo se gestiona el “atrás”
+
+Esto da:
+
+* **Mantenibilidad**
+* **Visión global**
+* **Flujo controlable**
+* **Menos bugs de backstack**
+
+---
+
+## 15. Cambio conceptual importante (sin romper lo anterior)
+
+A partir de ahora:
+
+* La **Activity deja de ser la pantalla**
+* La Activity pasa a ser un **contenedor**
+* Cada pantalla visible será un **Fragment**
+
+Esto **no rompe MVVM**:
+
+| Antes                     | Ahora                     |
+| ------------------------- | ------------------------- |
+| Activity = Vista          | Fragment = Vista          |
+| ViewModel = lógica/estado | ViewModel = lógica/estado |
+| Repository = datos        | Repository = datos        |
+
+Lo que cambia es **quién pinta** la interfaz, no el patrón.
+
+---
+
+## 16. La Activity como contenedor de navegación
+
+La `MainActivity` deja de tener inputs, botones o lógica de UI. Su única responsabilidad será:
+
+* Contener un `NavHost` (un “marco” donde se cargan fragments)
+* Delegar la navegación al sistema
+
+### 16.1 `activity_main.xml` (solo NavHost)
+
+Cambia tu `res/layout/activity_main.xml` para que sea solo el host:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.fragment.app.FragmentContainerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_host"
+    android:name="androidx.navigation.fragment.NavHostFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:navGraph="@navigation/nav_graph"
+    app:defaultNavHost="true" />
+```
+
+**Qué significa esto:**
+
+* La Activity ya no “decide” qué pantalla se ve.
+* El grafo (`nav_graph`) decide qué fragment aparece.
+* `defaultNavHost="true"` hace que el botón atrás lo gestione Navigation.
+
+### 16.2 `MainActivity.java` (mínima)
+
+```java
+package com.example.aula.ui;
+
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import com.example.aula.R;
+
+public class MainActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+}
+```
+
+---
+
+## 17. El grafo de navegación: mapa de la aplicación
+
+<img width="2006" height="1090" alt="imagen" src="https://github.com/user-attachments/assets/02a854cf-7722-4580-8c4c-cdafcd315517" />
+
+* Pantallas (destinos)
+* Conexiones (acciones)
+* Pantalla inicial (startDestination)
+
+### 17.1 `nav_graph.xml` (Login → Register → Home)
+
+Tendremos que crear este archivo y ubicarlo en `res/navigation/nav_graph.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.aula.ui.fragments.LoginFragment"
+        android:label="Login">
+
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment"/>
+
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/homeFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.aula.ui.fragments.RegisterFragment"
+        android:label="Registro">
+
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.aula.ui.fragments.HomeFragment"
+        android:label="Home"/>
+</navigation>
+```
+
+**Idea DI clave:**
+
+> El flujo se puede revisar sin leer Java: está “dibujado” en el grafo.
+
+---
+
+## 18. Primera fragmentación de Aula+ Lite
+
+Dividimos la app en tres pantallas:
+
+* `LoginFragment` → acceso
+* `RegisterFragment` → alta
+* `HomeFragment` → **la pantalla original de Aula+ Lite**, migrada a fragment
+
+**Importante:**
+
+* No “tiramos” MVVM.
+* El ViewModel de avisos se mantiene.
+* La lógica y repositorio de avisos siguen siendo válidos.
+
+---
+
+## 19. Navegar desde un Fragment (sin Intents)
+
+En un fragment, navegar se hace así:
+
+```java
+NavHostFragment.findNavController(this)
+        .navigate(R.id.action_login_to_register);
+```
+
+Ventajas:
+
+* Navegación coherente
+* Backstack gestionado
+* Menos código repetido
+* Flujo centralizado en el grafo
+
+---
+
+##  PRÁCTICA 4 — NAVEGACIÓN Y ESTRUCTURA
+
+**Incremental sobre Aula+ Lite**
+
+En este punto ya tienes: Activity contenedor, NavHost, grafo y navegación.
+
+### Objetivo
+<img width="600" height="519" alt="imagen" src="https://github.com/user-attachments/assets/ec61aafd-f02e-41f1-a0f5-fe8473034e3f" />
+
+Convertir Aula+ Lite en una app con **flujo real de pantallas** sin usar Intents.
+
+### Tareas
+
+1. Convertir la app en **una única Activity** contenedora (`MainActivity`).
+2. Crear:
+
+   * `LoginFragment`
+   * `RegisterFragment`
+   * `HomeFragment`
+3. Crear el grafo `nav_graph.xml` con:
+
+   * Login → Register
+   * Login → Home (fake de momento)
+   * Register → Login
+4. Migrar el contenido de tu `activity_main.xml` original (Aula+ Lite) a un layout de `HomeFragment`.
+5. Prohibido:
+
+   * `Intent`
+   * múltiples Activities
+6. Comprobación obligatoria:
+
+   * El botón atrás vuelve al sitio correcto **sin programarlo manualmente**.
+
+### Código de ejemplo mínimo (LoginFragment “fake” para validar navegación)
+
+`ui/fragments/LoginFragment.java`
+
+```java
+package com.example.aula.ui.fragments;
+
+import android.os.Bundle;
+import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
+
+import com.example.aula.R;
+import com.google.android.material.button.MaterialButton;
+
+public class LoginFragment extends Fragment {
+
+    public LoginFragment() {
+        super(R.layout.fragment_login);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
+        MaterialButton btnLogin = view.findViewById(R.id.btnLogin);
+        MaterialButton btnGoRegister = view.findViewById(R.id.btnGoRegister);
+
+        btnGoRegister.setOnClickListener(v ->
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_login_to_register)
+        );
+
+        // login fake (siempre navega)
+        btnLogin.setOnClickListener(v ->
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_login_to_home)
+        );
+    }
+}
+```
