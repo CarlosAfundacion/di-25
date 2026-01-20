@@ -216,12 +216,12 @@ Ejemplo base:
 
 Checklist alumno:
 
-* [ ] Firebase creado + app añadida
-* [ ] `google-services.json` en `app/`
-* [ ] Dependencias + plugin puestos
-* [ ] LoginFragment con `TextInputLayout` (email + pass), botón y progress
-* [ ] RegisterFragment equivalente (email + pass + repetir pass opcional)
-* [ ] Navegación entre login y register funcionando
+*  Firebase creado + app añadida
+*  `google-services.json` en `app/`
+*  Dependencias + plugin puestos
+*  LoginFragment con `TextInputLayout` (email + pass), botón y progress
+*  RegisterFragment equivalente (email + pass + repetir pass opcional)
+*  Navegación entre login y register funcionando
 
 
 ---
