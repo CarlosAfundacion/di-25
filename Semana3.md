@@ -197,7 +197,8 @@ Ejemplo base:
     android:id="@+id/progress"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:visibility="gone" />
+    android:visibility="gone"
+    android:indeterminate="true" />
 ```
 
 #### 3.2 Reglas DI para errores
@@ -423,7 +424,11 @@ public class LoginFragment extends Fragment {
             boolean loading = Boolean.TRUE.equals(isLoading);
             btnLogin.setEnabled(!loading);
             btnGoRegister.setEnabled(!loading);
-            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+            if (loading) {
+                progress.show();
+            } else {
+                progress.hide();
+            }
         });
 
         // OBSERVAR error (Snackbar)
