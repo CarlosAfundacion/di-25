@@ -1,5 +1,3 @@
-
-
 #  SEMANA 4 · LUNES
 
 ## Material Design profesional: **Tema importado + aplicación real**
