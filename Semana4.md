@@ -60,7 +60,7 @@ Características clave:
 
 ---
 
-## 3. Generar un tema Material 3 (fuera de Android Studio)
+## 3. Generar un tema Material 3
 
 Android Studio **NO es la herramienta adecuada** para diseñar un tema.
 
