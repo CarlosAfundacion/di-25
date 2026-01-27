@@ -673,3 +673,355 @@ AppCompatDelegate.setDefaultNightMode(
 
 
 ---
+
+
+# MARTES 
+
+## Etiquetado semántico, comprensión de la UI y uso correcto de `strings.xml`
+
+---
+
+## 0. Contexto general
+
+*Aula+ Lite* se ha construido siguiendo buenas prácticas de arquitectura, diseño y usabilidad:
+
+* Componentes **Material Design 3**
+* Tema propio centralizado
+* Soporte **Day / Night**
+* Navegación coherente
+* Pantallas funcionales y conectadas a datos reales
+
+En este punto, la aplicación **funciona correctamente**, pero una interfaz profesional no se evalúa únicamente por su funcionamiento, sino por:
+
+* su **claridad**
+* su **consistencia**
+* su **capacidad de ser entendida por cualquier usuario**, independientemente del modo de interacción
+
+Este bloque introduce los **fundamentos de accesibilidad en Android**, centrados en el **significado semántico de los elementos visuales** y en cómo Android interpreta una interfaz más allá de lo que se ve en pantalla.
+
+---
+
+## 1. Accesibilidad en Android: concepto fundamental
+
+Android no “ve” la interfaz como una persona.
+
+Una persona interpreta:
+
+* colores
+* iconos
+* posición
+* jerarquía visual
+
+Android, en cambio, necesita:
+
+* **texto**
+* **roles**
+* **descripciones**
+* **orden lógico**
+
+Si estos elementos no están correctamente definidos, tecnologías como lectores de pantalla, sistemas de navegación por foco o herramientas de análisis **no pueden interpretar la interfaz correctamente**.
+
+Por eso, la accesibilidad **no es una funcionalidad extra**, sino una **parte del diseño de interfaces**.
+
+---
+
+## 2. Qué es `contentDescription`
+
+`android:contentDescription` es un atributo que permite asignar a un elemento visual un **significado textual** que no está necesariamente visible en pantalla.
+
+Este significado se utiliza para:
+
+* describir iconos
+* explicar la función de botones sin texto
+* aportar contexto a imágenes informativas
+* permitir que tecnologías de asistencia interpreten la interfaz
+
+Es importante entender que:
+
+> `contentDescription` **no describe cómo se ve algo**,
+> describe **qué representa o qué acción realiza**.
+
+---
+
+## 3. Qué es `strings.xml` y por qué es obligatorio usarlo
+
+### 3.1 Qué es `strings.xml`
+
+`strings.xml` es un archivo de recursos situado en:
+
+```
+res/values/strings.xml
+```
+
+Su función es **centralizar todos los textos de la aplicación** en un único lugar, en lugar de escribirlos directamente en layouts o código.
+
+Ejemplo:
+
+```xml
+<resources>
+    <string name="app_name">Aula+</string>
+    <string name="cd_add_notice">Añadir aviso</string>
+    <string name="cd_logout">Cerrar sesión</string>
+</resources>
+```
+
+---
+
+### 3.2 Para qué se usa `strings.xml`
+
+Se utiliza para:
+
+* mantener **coherencia textual**
+* facilitar **cambios globales**
+* preparar la app para **traducciones**
+* evitar textos duplicados o inconsistentes
+* separar **contenido** de **estructura**
+
+En interfaces profesionales, **ningún texto se escribe “a mano” en el layout** sin pasar por `strings.xml`.
+
+---
+
+### 3.3 Relación con accesibilidad
+
+Las descripciones de accesibilidad **también son texto**, por lo que:
+
+* deben estar centralizadas
+* deben ser reutilizables
+* deben poder revisarse fácilmente
+
+Por eso, **todas las `contentDescription` deben definirse en `strings.xml`**.
+
+---
+
+## 4. Cuándo es obligatorio usar `contentDescription`
+
+### 4.1 Elementos interactivos sin texto visible
+
+Si un elemento:
+
+* es **clicable**
+* realiza una **acción**
+* y **no muestra texto visible**
+
+entonces **debe** tener una `contentDescription`.
+
+Ejemplo: botón de añadir con icono.
+
+```xml
+<ImageButton
+    android:id="@+id/btnAddNotice"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/ic_add"
+    android:contentDescription="@string/cd_add_notice"
+    android:background="?attr/selectableItemBackgroundBorderless" />
+```
+
+Este atributo permite que el sistema comunique claramente la acción al usuario.
+
+---
+
+### 4.2 FloatingActionButton (FAB)
+
+El FAB es un caso muy común y **obligatorio** de describir, ya que su función suele ser crítica.
+
+```xml
+<com.google.android.material.floatingactionbutton.FloatingActionButton
+    android:id="@+id/fabAdd"
+    app:srcCompat="@drawable/ic_add"
+    android:contentDescription="@string/cd_add_notice" />
+```
+
+Sin esta descripción, el botón existe visualmente, pero **no semánticamente**.
+
+---
+
+## 5. Cuándo NO usar `contentDescription`
+
+### 5.1 Elementos con texto visible
+
+Si un componente ya muestra texto visible (por ejemplo, un botón con `android:text`), ese texto **ya actúa como etiqueta semántica**.
+
+Incorrecto:
+
+```xml
+<Button
+    android:text="Cerrar sesión"
+    android:contentDescription="Cerrar sesión" />
+```
+
+Esto genera **duplicación innecesaria**.
+
+Correcto:
+
+```xml
+<Button
+    android:text="@string/logout" />
+```
+
+---
+
+### 5.2 Imágenes puramente decorativas
+
+Una imagen decorativa:
+
+* no aporta información funcional
+* no representa una acción
+* no cambia el significado de la pantalla
+
+Debe indicarse explícitamente que **no es relevante para accesibilidad**.
+
+```xml
+<ImageView
+    android:src="@drawable/bg_wave"
+    android:contentDescription="@null"
+    android:importantForAccessibility="no" />
+```
+
+Esto evita que la imagen:
+
+* reciba foco
+* sea anunciada
+* interfiera en la navegación
+
+---
+
+## 6. Cómo escribir buenas descripciones (criterio profesional)
+
+### 6.1 Describir la acción, no el elemento gráfico
+
+Mal:
+
+* “Icono de suma”
+* “Imagen de logout”
+* “Botón redondo”
+
+Bien:
+
+* “Añadir aviso”
+* “Cerrar sesión”
+* “Abrir ajustes”
+
+La descripción debe responder a:
+
+> ¿Qué ocurre si interactúo con esto?
+
+---
+
+### 6.2 Lenguaje claro y neutral
+
+Buenas prácticas:
+
+* usar verbos en infinitivo
+* evitar tecnicismos
+* evitar referencias visuales (“izquierda”, “icono”)
+* mantener consistencia terminológica
+
+Ejemplo:
+
+```xml
+<string name="cd_open_settings">Abrir ajustes</string>
+```
+
+---
+
+## 7. Casos habituales en *Aula+ Lite*
+
+### 7.1 Botón de logout en la barra superior
+
+```xml
+<ImageButton
+    android:id="@+id/btnLogout"
+    android:src="@drawable/ic_logout"
+    android:contentDescription="@string/cd_logout"
+    android:background="?attr/selectableItemBackgroundBorderless" />
+```
+
+---
+
+### 7.2 Imágenes en elementos de lista
+
+En un `RecyclerView`:
+
+* Si la imagen **representa información**, se describe.
+* Si es solo decorativa, se excluye.
+
+Decorativa:
+
+```xml
+<ImageView
+    android:src="@drawable/ic_notice"
+    android:contentDescription="@null"
+    android:importantForAccessibility="no" />
+```
+
+---
+
+## 8. Relación con los estados de interfaz
+
+Una interfaz no siempre muestra contenido final. Puede encontrarse en estados como:
+
+* carga
+* sin datos
+* error
+* contenido disponible
+
+Cada estado debe ser **comprensible sin depender solo de lo visual**.
+
+Ejemplo correcto en estado de carga:
+
+```xml
+<TextView
+    android:text="Cargando avisos…"
+    android:visibility="visible" />
+```
+
+El texto aporta significado semántico que un indicador gráfico no transmite por sí solo.
+
+---
+
+## 9. Errores comunes a evitar
+
+* Usar `contentDescription` para describir colores o formas
+* Repetir textos visibles
+* Dejar iconos interactivos sin describir
+* Hacer accesibles elementos puramente decorativos
+* Escribir descripciones vagas o genéricas
+
+---
+
+## 10. Criterio final de calidad
+
+Una interfaz bien diseñada:
+
+* comunica intención
+* no depende exclusivamente del aspecto visual
+* puede ser interpretada correctamente por el sistema
+
+El etiquetado semántico es una **responsabilidad del diseño de interfaces**, no de la lógica ni de la arquitectura de la aplicación.
+
+Este trabajo sienta la base para la **auditoría de accesibilidad y calidad** del siguiente bloque, donde se validará la interfaz mediante herramientas automáticas y revisión sistemática.
+
+---
+
+## Práctica · Accesibilidad básica y etiquetado semántico
+
+**Obligatoria**
+
+Implementar mejoras de accesibilidad en *Aula+ Lite* sin modificar la lógica de negocio.
+
+---
+
+**Obligatoria**
+
+* Identificar elementos interactivos sin texto visible en todas las pantallas.
+* Sustituye los botones de `Añadir aviso` y `Borrar último` por FAB's (Floating Action Buttons).
+* Añadir `contentDescription` donde proceda.
+* Centralizar todas las descripciones en `strings.xml`.
+* Eliminar duplicaciones entre texto visible y `contentDescription`.
+* Verificar que los estados de carga, error o lista vacía incluyen información textual comprensible.
+
+---
+
+
+
