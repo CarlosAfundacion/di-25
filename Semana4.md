@@ -1015,7 +1015,7 @@ Implementar mejoras de accesibilidad en *Aula+ Lite* sin modificar la lógica de
 **Obligatoria**
 
 * Identificar elementos interactivos sin texto visible en todas las pantallas.
-* Sustituye los botones de `Añadir aviso` y `Borrar último` por FAB's (Floating Action Buttons).
+* Sustituye los botones de `Añadir aviso` por un FAB (Floating Action Button).
 * Añadir `contentDescription` donde proceda.
 * Centralizar todas las descripciones en `strings.xml`.
 * Eliminar duplicaciones entre texto visible y `contentDescription`.
